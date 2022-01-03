@@ -21,42 +21,14 @@ class GraphConvolution(Module):
         self.in_features = in_features
         self.out_features = out_features
         self.weight = Parameter(torch.FloatTensor(in_features, out_features))
-        # self.weight = Parameter(torch.FloatTensor(out_features, in_features))
         self.bias = Parameter(torch.FloatTensor(out_features))
-        # self.linear = torch.nn.Linear(self.in_features, self.out_features)
         self.reset_parameters()
 
     def reset_parameters(self):
-        # stdv = 1. / math.sqrt(self.weight.size(1))
         stdv = 1. / math.sqrt(self.weight.T.size(1))
         self.weight.data.uniform_(-stdv, stdv)
         if self.bias is not None:
             self.bias.data.uniform_(-stdv, stdv)
-
-    # def reset_parameters(self):
-    #     #TODO
-    #     # torch.manual_seed(0)
-    #     # torch.cuda.manual_seed(0)
-    #     init.kaiming_uniform_(self.weight, a=math.sqrt(5))
-    #     if self.bias is not None:
-    #         fan_in, _ = init._calculate_fan_in_and_fan_out(self.weight)
-    #         bound = 1 / math.sqrt(fan_in) if fan_in > 0 else 0
-    #         init.uniform_(self.bias, -bound, bound)
-
-    # def reset_parameters(self):
-    #     self.linear.reset_parameters()
-
-    # def reset_parameters(self):
-    #     linear = torch.nn.Linear(self.in_features, self.out_features)
-    #     linear.reset_parameters()
-    #     self.weight.data.copy_(linear.weight.data.T)
-    #     self.bias.data.copy_(linear.bias.data)
-
-    # def reset_parameters(self):
-    #     stdv = 1. / math.sqrt(self.linear.weight.size(1))
-    #     self.linear.weight.data.uniform_(-stdv, stdv)
-    #     if self.linear.bias is not None:
-    #         self.linear.bias.data.uniform_(-stdv, stdv)
 
     def forward(self, input, adj):
         """ Graph Convolutional Layer forward function
@@ -73,16 +45,6 @@ class GraphConvolution(Module):
             return output + self.bias
         else:
             return output
-
-    #def forward(self, input, adj):
-    #    support = torch.mm(input, self.weight.T)
-    #    output = torch.spmm(adj, support)
-    #    return output + self.bias
-
-    # def forward(self, input, adj):
-    #     support = self.linear(input)
-    #     output = torch.spmm(adj, support)
-    #     return output
 
     def __repr__(self):
         return self.__class__.__name__ + ' (' \
@@ -148,12 +110,8 @@ class GCN(nn.Module):
             return F.log_softmax(x, dim=1)
 
     def forward_sampler(self, x, adjs):
-        # TODO: do we need normalization?
         # for ix, layer in enumerate(self.layers):
         for ix, (adj, _, size) in enumerate(adjs):
-            # x_target = x[: size[1]]
-            # x = self.layers[ix]((x, x_target), edge_index)
-            # adj = adj.to(self.device)
             x = self.layers[ix](x, adj)
             if ix != len(self.layers) - 1:
                 x = self.bns[ix](x) if self.with_bn else x
@@ -190,7 +148,6 @@ class GCN(nn.Module):
             for bn in self.bns:
                 bn.reset_parameters()
 
-    # def fit(self, data, train_iters=200, initialize=True, verbose=False, normalize=True, **kwargs):
     def fit(self, features, adj, labels, idx_train, idx_val=None, train_iters=200, initialize=True, verbose=False, normalize=True, patience=None, **kwargs):
 
         if initialize:
@@ -260,7 +217,6 @@ class GCN(nn.Module):
         if initialize:
             self.initialize()
 
-        # features, adj, labels = data.feat_train, data.adj_train, data.labels_train
         if type(adj) is not torch.Tensor:
             features, adj, labels = utils.to_tensor(features, adj, labels, device=self.device)
         else:
@@ -460,11 +416,6 @@ class GCN(nn.Module):
             output = self.forward(self.features, self.adj_norm)
             loss_val = F.nll_loss(output[idx_val], labels[idx_val])
             acc_val = utils.accuracy(output[idx_val], labels[idx_val])
-
-            # if best_loss_val > loss_val:
-            #     best_loss_val = loss_val
-            #     self.output = output
-            #     weights = deepcopy(self.state_dict())
 
             if acc_val > best_acc_val:
                 best_acc_val = acc_val

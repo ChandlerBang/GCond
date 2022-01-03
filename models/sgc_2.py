@@ -21,9 +21,7 @@ class GraphConvolution(Module):
         self.in_features = in_features
         self.out_features = out_features
         self.weight = Parameter(torch.FloatTensor(in_features, out_features))
-        # self.weight = Parameter(torch.FloatTensor(out_features, in_features))
         self.bias = Parameter(torch.FloatTensor(out_features))
-        # self.linear = torch.nn.Linear(self.in_features, self.out_features)
         self.reset_parameters()
 
     def reset_parameters(self):
@@ -126,46 +124,6 @@ class SGC(nn.Module):
             return torch.sigmoid(x)
         else:
             return F.log_softmax(x, dim=1)
-
-    # def forward(self, x, adj):
-    #     for i in range(self.nlayers-1):
-    #         x = torch.spmm(adj, x)
-    #     for ix, layer in enumerate(self.layers):
-    #         x = layer(x, adj)
-
-    #     if self.multi_label:
-    #         return torch.sigmoid(x)
-    #     else:
-    #         return F.log_softmax(x, dim=1)
-
-    # def forward_sampler(self, x, adjs):
-    #     for ix, (adj, _, size) in enumerate(adjs):
-    #         if ix == 0:
-    #             x = self.layers[ix](x, adj)
-    #         else:
-    #             x = torch_sparse.matmul(adj, x)
-
-    #     if self.multi_label:
-    #         return torch.sigmoid(x)
-    #     else:
-    #         return F.log_softmax(x, dim=1)
-
-    # def forward_sampler_syn(self, x, adjs):
-    #     # TODO: do we need normalization?
-    #     for ix, (adj) in enumerate(adjs):
-    #         if ix == 0:
-    #             x = self.layers[ix](x, adj)
-    #         else:
-    #             if type(adj) == torch.Tensor:
-    #                 x = adj @ x
-    #             else:
-    #                 x = torch_sparse.matmul(adj, x)
-
-    #     if self.multi_label:
-    #         return torch.sigmoid(x)
-    #     else:
-    #         return F.log_softmax(x, dim=1)
-
 
     def initialize(self):
         """Initialize parameters of GCN.
