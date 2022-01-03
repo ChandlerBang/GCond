@@ -1,7 +1,6 @@
 # GCond
 A PyTorch implementation of paper ["Graph Condensation for Graph Neural Networks"](https://arxiv.org/abs/2110.07580)
 
-Code will be released soon. Stay tuned :)
 
 
 Abstract
@@ -14,7 +13,31 @@ We propose and study the problem of graph condensation for graph neural networks
 <div align=center><img src="https://github.com/ChandlerBang/GCond/blob/main/GCond.png" width="800"/></div>
 
 
+## Some Notes
+The current code provides the essential implemention of GCond. Currently it contains some repetitive code blocks and comments. A more detailed and clean version will be updated soon. 
 
+
+## Requirements
+* pytorch
+* pytorch geometric
+
+
+## Download Datasets
+For cora, citeseer and pubmed, the code will directly download them; so no extra script is needed.
+For reddit, flickr and arxiv, we use the datasets provided by [GraphSAINT](https://github.com/GraphSAINT/GraphSAINT). Please follow their instruction to download. 
+
+## Run the code
+----
+For transductive setting, please run the following command:
+```
+python train_gcond_transduct.py --dataset cora --nlayers=2 --lr_feat=1e-4 --gpu_id=0  --lr_adj=1e-4 --r=0.5  
+```
+where `r` indicates the ratio of condensed samples to the labeled samples. For instance, there are only 140 labeled nodes in Cora dataset, so `r=0.5` indicates the number of condensed samples are 70.  
+
+For inductive setting, please run the following command:
+```
+python train_gcond_induct.py --dataset flickr --nlayers=2 --lr_feat=0.01 --gpu_id=0  --lr_adj=0.01 --r=0.005 --epochs=1000  --outer=20 
+```
 
 
 ## Cite
