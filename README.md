@@ -18,9 +18,18 @@ The current code provides the essential implemention of GCond. Currently it cont
 
 
 ## Requirements
-* pytorch
-* pytorch geometric
-
+Please see [requirements.txt](https://github.com/ChandlerBang/GCond/blob/main/requirements.txt).
+```
+torch==1.7.0
+torch_geometric==1.6.3
+scipy==1.6.2
+numpy==1.19.2
+ogb==1.3.0
+tqdm==4.59.0
+torch_sparse==0.6.9
+deeprobust==0.2.4
+scikit_learn==1.0.2
+```
 
 ## Download Datasets
 For cora, citeseer and pubmed, the code will directly download them; so no extra script is needed.
