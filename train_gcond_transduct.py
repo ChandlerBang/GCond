@@ -13,7 +13,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--gpu_id', type=int, default=0, help='gpu id')
 parser.add_argument('--dataset', type=str, default='cora')
 parser.add_argument('--dis_metric', type=str, default='ours')
-parser.add_argument('--epochs', type=int, default=600)
+parser.add_argument('--epochs', type=int, default=2000)
 parser.add_argument('--nlayers', type=int, default=3)
 parser.add_argument('--hidden', type=int, default=256)
 parser.add_argument('--lr_adj', type=float, default=0.01)
@@ -31,6 +31,7 @@ parser.add_argument('--debug', type=int, default=0)
 parser.add_argument('--sgc', type=int, default=1)
 parser.add_argument('--inner', type=int, default=0)
 parser.add_argument('--outer', type=int, default=20)
+parser.add_argument('--save', type=int, default=0)
 args = parser.parse_args()
 
 torch.cuda.set_device(args.gpu_id)
@@ -43,7 +44,7 @@ torch.cuda.manual_seed(args.seed)
 
 print(args)
 
-data_graphsaint = ['flickr', 'reddit', 'ogbn-arxiv']
+data_graphsaint = ['flickr', 'reddit']
 if args.dataset in data_graphsaint:
     data = DataGraphSAINT(args.dataset)
     data_full = data.data_full

@@ -13,8 +13,7 @@ class DataGraphSAINT:
     '''datasets used in GraphSAINT paper'''
 
     def __init__(self, dataset, **kwargs):
-        # dataset_str='data/'+dataset+'/'
-        dataset_str='/mnt/home/jinwei2/Colosseum/git/GCond-Private/data/'+dataset+'/'
+        dataset_str='data/'+dataset+'/'
         adj_full = sp.load_npz(dataset_str+'adj_full.npz')
         self.nnodes = adj_full.shape[0]
         if dataset == 'ogbn-arxiv':
@@ -49,11 +48,6 @@ class DataGraphSAINT:
         class_map = json.load(open(dataset_str + 'class_map.json','r'))
         labels = self.process_labels(class_map)
 
-        # if 'label_rate' in kwargs:
-        #     label_rate = kwargs['label_rate']
-        #     if label_rate < 1:
-        #         idx_train = idx_train[:int(label_rate*len(idx_train))]
-
         self.labels_train = labels[idx_train]
         self.labels_val = labels[idx_val]
         self.labels_test = labels[idx_test]
@@ -64,14 +58,11 @@ class DataGraphSAINT:
 
         self.adj_full = adj_full
         self.feat_full = feat
-        # self.adj_full = self.adj_val
-        # self.feat_full = self.feat_val
         self.labels_full = labels
         self.idx_train = np.array(idx_train)
         self.idx_val = np.array(idx_val)
         self.idx_test = np.array(idx_test)
         self.samplers = None
-
 
     def process_labels(self, class_map):
         """
@@ -142,37 +133,6 @@ class DataGraphSAINT:
         batch = np.random.permutation(self.class_dict2[c])[:num]
         out = self.samplers[c].sample(batch)
         return out
-
-    def retrieve_class_multi_sampler(self, c, adj, transductive, num=256, args=None):
-        if self.class_dict2 is None:
-            self.class_dict2 = {}
-            for i in range(self.nclass):
-                if transductive:
-                    idx_train = np.array(self.idx_train)
-                    idx = idx_train[self.labels_train == i]
-                else:
-                    idx = np.arange(len(self.labels_train))[self.labels_train==i]
-                self.class_dict2[i] = idx
-
-
-        if self.samplers is None:
-            self.samplers = []
-            for l in range(2):
-                layer_samplers = []
-                sizes = [15] if l == 0 else [10, 5]
-                for i in range(self.nclass):
-                    node_idx = torch.LongTensor(self.class_dict2[i])
-                    layer_samplers.append(NeighborSampler(adj,
-                                        node_idx=node_idx,
-                                        sizes=sizes, batch_size=num,
-                                        num_workers=8, return_e_id=False,
-                                        num_nodes=adj.size(0),
-                                        shuffle=True))
-                self.samplers.append(layer_samplers)
-        batch = np.random.permutation(self.class_dict2[c])[:num]
-        out = self.samplers[args.nlayers-1][c].sample(batch)
-        return out
-
 
 
 class GraphData:

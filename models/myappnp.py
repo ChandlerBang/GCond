@@ -1,4 +1,4 @@
-'''one transformation with multiple propagation'''
+"""multiple transformaiton and multiple propagation"""
 import torch.nn as nn
 import torch.nn.functional as F
 import math
@@ -12,72 +12,41 @@ from sklearn.metrics import f1_score
 from torch.nn import init
 import torch_sparse
 
-class GraphConvolution(Module):
-    """Simple GCN layer, similar to https://github.com/tkipf/pygcn
-    """
 
-    def __init__(self, in_features, out_features, with_bias=True):
-        super(GraphConvolution, self).__init__()
-        self.in_features = in_features
-        self.out_features = out_features
-        self.weight = Parameter(torch.FloatTensor(in_features, out_features))
-        self.bias = Parameter(torch.FloatTensor(out_features))
-        self.reset_parameters()
-
-    def reset_parameters(self):
-        # stdv = 1. / math.sqrt(self.weight.size(1))
-        stdv = 1. / math.sqrt(self.weight.T.size(1))
-        self.weight.data.uniform_(-stdv, stdv)
-        if self.bias is not None:
-            self.bias.data.uniform_(-stdv, stdv)
-
-    def forward(self, input, adj):
-        """ Graph Convolutional Layer forward function
-        """
-        if input.data.is_sparse:
-            support = torch.spmm(input, self.weight)
-        else:
-            support = torch.mm(input, self.weight)
-        if isinstance(adj, torch_sparse.SparseTensor):
-            output = torch_sparse.matmul(adj, support)
-        else:
-            output = torch.spmm(adj, support)
-        if self.bias is not None:
-            return output + self.bias
-        else:
-            return output
-
-    def __repr__(self):
-        return self.__class__.__name__ + ' (' \
-               + str(self.in_features) + ' -> ' \
-               + str(self.out_features) + ')'
-
-
-class SGC(nn.Module):
+class APPNP(nn.Module):
 
     def __init__(self, nfeat, nhid, nclass, nlayers=2, dropout=0.5, lr=0.01, weight_decay=5e-4,
-            with_relu=True, with_bias=True, with_bn=False, device=None):
+            ntrans=1, with_bias=True, with_bn=False, device=None):
 
-        super(SGC, self).__init__()
+        super(APPNP, self).__init__()
 
         assert device is not None, "Please specify 'device'!"
         self.device = device
         self.nfeat = nfeat
         self.nclass = nclass
+        self.alpha = 0.1
 
-        self.conv = GraphConvolution(nfeat, nclass, with_bias=with_bias)
+        with_bn = False
+
+        self.layers = nn.ModuleList([])
+        if ntrans == 1:
+            self.layers.append(MyLinear(nfeat, nclass))
+        else:
+            self.layers.append(MyLinear(nfeat, nhid))
+            if with_bn:
+                self.bns = torch.nn.ModuleList()
+                self.bns.append(nn.BatchNorm1d(nhid))
+            for i in range(ntrans-2):
+                if with_bn:
+                    self.bns.append(nn.BatchNorm1d(nhid))
+                self.layers.append(MyLinear(nhid, nhid))
+            self.layers.append(MyLinear(nhid, nclass))
 
         self.nlayers = nlayers
+        self.weight_decay = weight_decay
         self.dropout = dropout
         self.lr = lr
-        if not with_relu:
-            self.weight_decay = 0
-        else:
-            self.weight_decay = weight_decay
-        self.with_relu = with_relu
-        if with_bn:
-            print('Warning: SGC does not have bn!!!')
-        self.with_bn = False
+        self.with_bn = with_bn
         self.with_bias = with_bias
         self.output = None
         self.best_model = None
@@ -85,115 +54,84 @@ class SGC(nn.Module):
         self.adj_norm = None
         self.features = None
         self.multi_label = None
+        self.sparse_dropout = SparseDropout(dprob=0)
 
     def forward(self, x, adj):
-        weight = self.conv.weight
-        bias = self.conv.bias
-        x = torch.mm(x, weight)
+        for ix, layer in enumerate(self.layers):
+            x = layer(x)
+            if ix != len(self.layers) - 1:
+                x = self.bns[ix](x) if self.with_bn else x
+                x = F.relu(x)
+                x = F.dropout(x, self.dropout, training=self.training)
+
+        h = x
+        # here nlayers means K
         for i in range(self.nlayers):
-            x = torch.spmm(adj, x)
-        x = x + bias
+            # adj_drop = self.sparse_dropout(adj, training=self.training)
+            adj_drop = adj
+            x = torch.spmm(adj_drop, x)
+            x = x * (1 - self.alpha)
+            x = x + self.alpha * h
+
+
         if self.multi_label:
             return torch.sigmoid(x)
         else:
             return F.log_softmax(x, dim=1)
 
     def forward_sampler(self, x, adjs):
-        weight = self.conv.weight
-        bias = self.conv.bias
-        x = torch.mm(x, weight)
+        for ix, layer in enumerate(self.layers):
+            x = layer(x)
+            if ix != len(self.layers) - 1:
+                x = self.bns[ix](x) if self.with_bn else x
+                x = F.relu(x)
+                x = F.dropout(x, self.dropout, training=self.training)
+
+        h = x
         for ix, (adj, _, size) in enumerate(adjs):
-            x = torch_sparse.matmul(adj, x)
-        x = x + bias
+            # x_target = x[: size[1]]
+            # x = self.layers[ix]((x, x_target), edge_index)
+            # adj = adj.to(self.device)
+            # adj_drop = F.dropout(adj, p=self.dropout)
+            adj_drop = adj
+            h = h[: size[1]]
+            x = torch_sparse.matmul(adj_drop, x)
+            x = x * (1 - self.alpha)
+            x = x + self.alpha * h
+
         if self.multi_label:
             return torch.sigmoid(x)
         else:
             return F.log_softmax(x, dim=1)
 
     def forward_sampler_syn(self, x, adjs):
-        weight = self.conv.weight
-        bias = self.conv.bias
-        x = torch.mm(x, weight)
+        for ix, layer in enumerate(self.layers):
+            x = layer(x)
+            if ix != len(self.layers) - 1:
+                x = self.bns[ix](x) if self.with_bn else x
+                x = F.relu(x)
+                x = F.dropout(x, self.dropout, training=self.training)
+
         for ix, (adj) in enumerate(adjs):
-            if type(adj) == torch.Tensor:
-                x = adj @ x
-            else:
-                x = torch_sparse.matmul(adj, x)
-        x = x + bias
+            # x_target = x[: size[1]]
+            # x = self.layers[ix]((x, x_target), edge_index)
+            # adj = adj.to(self.device)
+            x = torch_sparse.matmul(adj, x)
+
         if self.multi_label:
             return torch.sigmoid(x)
         else:
             return F.log_softmax(x, dim=1)
 
+
     def initialize(self):
         """Initialize parameters of GCN.
         """
-        self.conv.reset_parameters()
+        for layer in self.layers:
+            layer.reset_parameters()
         if self.with_bn:
             for bn in self.bns:
                 bn.reset_parameters()
-
-    # def fit(self, data, train_iters=200, initialize=True, verbose=False, normalize=True, **kwargs):
-    def fit(self, features, adj, labels, idx_train, idx_val=None, train_iters=200, initialize=True, verbose=False, normalize=True, patience=None, **kwargs):
-
-        if initialize:
-            self.initialize()
-
-        # features, adj, labels = data.feat_train, data.adj_train, data.labels_train
-        if type(adj) is not torch.Tensor:
-            features, adj, labels = utils.to_tensor(features, adj, labels, device=self.device)
-        else:
-            features = features.to(self.device)
-            adj = adj.to(self.device)
-            labels = labels.to(self.device)
-
-        if normalize:
-            if utils.is_sparse_tensor(adj):
-                adj_norm = utils.normalize_adj_tensor(adj, sparse=True)
-            else:
-                adj_norm = utils.normalize_adj_tensor(adj)
-        else:
-            adj_norm = adj
-
-        if 'feat_norm' in kwargs and kwargs['feat_norm']:
-            from utils import row_normalize_tensor
-            features = row_normalize_tensor(features-features.min())
-
-        self.adj_norm = adj_norm
-        self.features = features
-
-        if len(labels.shape) > 1:
-            self.multi_label = True
-            self.loss = torch.nn.BCELoss()
-        else:
-            self.multi_label = False
-            self.loss = F.nll_loss
-
-        labels = labels.float() if self.multi_label else labels
-        self.labels = labels
-
-
-        self._train_without_val(labels, idx_train, train_iters, verbose)
-
-    def _train_without_val(self, labels, idx_train, train_iters, verbose):
-        self.train()
-        optimizer = optim.Adam(self.parameters(), lr=self.lr, weight_decay=self.weight_decay)
-        for i in range(train_iters):
-            if i == train_iters // 2:
-                lr = self.lr*0.1
-                optimizer = optim.Adam(self.parameters(), lr=lr, weight_decay=self.weight_decay)
-
-            optimizer.zero_grad()
-            output = self.forward(self.features, self.adj_norm)
-            loss_train = self.loss(output[idx_train], labels[idx_train])
-            loss_train.backward()
-            optimizer.step()
-            if verbose and i % 10 == 0:
-                print('Epoch {}, training loss: {}'.format(i, loss_train.item()))
-
-        self.eval()
-        output = self.forward(self.features, self.adj_norm)
-        self.output = output
 
     def fit_with_val(self, features, adj, labels, data, train_iters=200, initialize=True, verbose=False, normalize=True, patience=None, noval=False, **kwargs):
         '''data: full data class'''
@@ -234,6 +172,7 @@ class SGC(nn.Module):
         self.labels = labels
 
         if noval:
+            # self._train_without_val(labels, data, train_iters, verbose)
             # self._train_without_val(labels, data, train_iters, verbose)
             self._train_with_val(labels, data, train_iters, verbose, adj_val=True)
         else:
@@ -351,3 +290,55 @@ class SGC(nn.Module):
             return self.forward(self.features, self.adj_norm)
 
 
+
+class MyLinear(Module):
+    """Simple Linear layer, modified from https://github.com/tkipf/pygcn
+    """
+
+    def __init__(self, in_features, out_features, with_bias=True):
+        super(MyLinear, self).__init__()
+        self.in_features = in_features
+        self.out_features = out_features
+        self.weight = Parameter(torch.FloatTensor(in_features, out_features))
+        if with_bias:
+            self.bias = Parameter(torch.FloatTensor(out_features))
+        else:
+            self.register_parameter('bias', None)
+        self.reset_parameters()
+
+    def reset_parameters(self):
+        # stdv = 1. / math.sqrt(self.weight.size(1))
+        stdv = 1. / math.sqrt(self.weight.T.size(1))
+        self.weight.data.uniform_(-stdv, stdv)
+        if self.bias is not None:
+            self.bias.data.uniform_(-stdv, stdv)
+
+    def forward(self, input):
+        if input.data.is_sparse:
+            support = torch.spmm(input, self.weight)
+        else:
+            support = torch.mm(input, self.weight)
+        output = support
+        if self.bias is not None:
+            return output + self.bias
+        else:
+            return output
+
+    def __repr__(self):
+        return self.__class__.__name__ + ' (' \
+               + str(self.in_features) + ' -> ' \
+               + str(self.out_features) + ')'
+
+class SparseDropout(torch.nn.Module):
+    def __init__(self, dprob=0.5):
+        super(SparseDropout, self).__init__()
+        self.kprob=1-dprob
+
+    def forward(self, x, training):
+        if training:
+            mask=((torch.rand(x._values().size())+(self.kprob)).floor()).type(torch.bool)
+            rc=x._indices()[:,mask]
+            val=x._values()[mask]*(1.0/self.kprob)
+            return torch.sparse.FloatTensor(rc, val, x.size())
+        else:
+            return x

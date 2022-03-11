@@ -10,8 +10,8 @@ from copy import deepcopy
 import numpy as np
 from tqdm import tqdm
 from models.gcn import GCN
-from models.sgc_2 import SGC
-from models.sgc import SGC as SGC1
+from models.sgc import SGC
+from models.sgc_multi import SGC as SGC1
 from models.parametrized_adj import PGE
 import scipy.sparse as sp
 from torch_sparse import SparseTensor
@@ -88,6 +88,10 @@ class GCond:
         adj_syn = pge.inference(feat_syn)
         args = self.args
 
+        if self.args.save:
+            torch.save(adj_syn, f'saved_ours/adj_{args.dataset}_{args.reduction_rate}_{args.seed}.pt')
+            torch.save(feat_syn, f'saved_ours/feat_{args.dataset}_{args.reduction_rate}_{args.seed}.pt')
+
         if self.args.lr_adj == 0:
             n = len(labels_syn)
             adj_syn = torch.zeros((n, n))
@@ -138,7 +142,7 @@ class GCond:
         else:
             adj_norm = utils.normalize_adj_tensor(adj)
 
-        adj=adj_norm
+        adj = adj_norm
         adj = SparseTensor(row=adj._indices()[0], col=adj._indices()[1],
                 value=adj._values(), sparse_sizes=adj.size()).t()
 
@@ -149,7 +153,7 @@ class GCond:
         for it in range(args.epochs+1):
             if args.dataset in ['ogbn-arxiv']:
                 model = SGC1(nfeat=feat_syn.shape[1], nhid=self.args.hidden,
-                            dropout=0.0, with_bn=True,
+                            dropout=0.0, with_bn=False,
                             weight_decay=0e-4, nlayers=2,
                             nclass=data.nclass,
                             device=self.device).to(self.device)
@@ -215,7 +219,6 @@ class GCond:
                 # TODO: regularize
                 if args.alpha > 0:
                     loss_reg = args.alpha * regularization(adj_syn, utils.tensor2onehot(labels_syn))
-                # else:
                 else:
                     loss_reg = torch.tensor(0)
 
@@ -239,8 +242,6 @@ class GCond:
                     break
 
                 feat_syn_inner = feat_syn.detach()
-                # with torch.no_grad():
-                #     adj_syn_inner = pge(feat_syn_inner, inference=1)
                 adj_syn_inner = pge.inference(feat_syn_inner)
                 adj_syn_inner_norm = utils.normalize_adj_tensor(adj_syn_inner, sparse=False)
                 feat_syn_inner_norm = feat_syn_inner
@@ -254,9 +255,10 @@ class GCond:
 
 
             loss_avg /= (data.nclass*outer_loop)
-            print('Epoch {}, loss_avg: {}'.format(it, loss_avg))
+            if it % 50 == 0:
+                print('Epoch {}, loss_avg: {}'.format(it, loss_avg))
 
-            eval_epochs = [50, 100, 200, 400, 600, 800, 1000, 1200, 1600, 2000]
+            eval_epochs = [400, 600, 800, 1000, 1200, 1600, 2000]
 
             if verbose and it in eval_epochs:
             # if verbose and (it+1) % 50 == 0:

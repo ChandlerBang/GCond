@@ -1,5 +1,5 @@
 # GCond
-A PyTorch implementation of paper ["Graph Condensation for Graph Neural Networks"](https://arxiv.org/abs/2110.07580)
+[ICLR 2022] A PyTorch implementation of paper ["Graph Condensation for Graph Neural Networks"](https://arxiv.org/abs/2110.07580)
 
 
 
@@ -33,10 +33,10 @@ scikit_learn==1.0.2
 
 ## Download Datasets
 For cora, citeseer and pubmed, the code will directly download them; so no extra script is needed.
-For reddit, flickr and arxiv, we use the datasets provided by [GraphSAINT](https://github.com/GraphSAINT/GraphSAINT). Please follow their instruction to download. 
+For reddit, flickr and arxiv, we use the datasets provided by [GraphSAINT](https://github.com/GraphSAINT/GraphSAINT). 
+They are available on [Google Drive link](https://drive.google.com/open?id=1zycmmDES39zVlbVCYs88JTJ1Wm5FbfLz) (alternatively, [BaiduYun link (code: f1ao)](https://pan.baidu.com/s/1SOb0SiSAXavwAcNqkttwcg)). Rename the folder to `data` at the root directory. Note that the links are provided by GraphSAINT team. 
 
 ## Run the code
-----
 For transductive setting, please run the following command:
 ```
 python train_gcond_transduct.py --dataset cora --nlayers=2 --lr_feat=1e-4 --gpu_id=0  --lr_adj=1e-4 --r=0.5  
@@ -45,8 +45,13 @@ where `r` indicates the ratio of condensed samples to the labeled samples. For i
 
 For inductive setting, please run the following command:
 ```
-python train_gcond_induct.py --dataset flickr --nlayers=2 --lr_feat=0.01 --gpu_id=0  --lr_adj=0.01 --r=0.005 --epochs=1000  --outer=20 
+python train_gcond_induct.py --dataset flickr --nlayers=2 --lr_feat=0.01 --gpu_id=0  --lr_adj=0.01 --r=0.005 --epochs=1000  --outer=10 --inner=1
 ```
+
+## Reproduce the performance
+For Table 2, run `bash scripts/run_main.sh`.
+
+For Table 3, run `bash scripts/run_cross.sh`.
 
 
 ## Cite

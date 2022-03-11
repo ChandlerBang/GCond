@@ -32,6 +32,7 @@ parser.add_argument('--sgc', type=int, default=1)
 parser.add_argument('--inner', type=int, default=0)
 parser.add_argument('--outer', type=int, default=20)
 parser.add_argument('--option', type=int, default=0)
+parser.add_argument('--save', type=int, default=0)
 parser.add_argument('--label_rate', type=float, default=1)
 args = parser.parse_args()
 
@@ -45,7 +46,7 @@ torch.cuda.manual_seed(args.seed)
 
 print(args)
 
-data_graphsaint = ['flickr', 'reddit', 'ogbn-arxiv']
+data_graphsaint = ['flickr', 'reddit']
 if args.dataset in data_graphsaint:
     # data = DataGraphSAINT(args.dataset)
     data = DataGraphSAINT(args.dataset, label_rate=args.label_rate)

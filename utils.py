@@ -2,26 +2,28 @@ import os.path as osp
 import numpy as np
 import scipy.sparse as sp
 import torch
-from torch_geometric.datasets import Planetoid, PPI, WikiCS, Coauthor, Amazon, CoraFull
 import torch_geometric.transforms as T
 from ogb.nodeproppred import PygNodePropPredDataset, Evaluator
-from deeprobust.graph.data import Dataset, PrePtbDataset
-from deeprobust.graph import utils
-from deeprobust.graph.utils import get_train_val_test_gcn, get_train_val_test
+from deeprobust.graph.data import Dataset
+from deeprobust.graph.utils import get_train_val_test
 from torch_geometric.utils import train_test_split_edges
 from sklearn.model_selection import train_test_split
 from sklearn import metrics
 import numpy as np
 import torch.nn.functional as F
+from sklearn.preprocessing import StandardScaler
 from deeprobust.graph.utils import *
 from torch_geometric.data import NeighborSampler
 from torch_geometric.utils import add_remaining_self_loops, to_undirected
+from torch_geometric.datasets import Planetoid
 
 
 def get_dataset(name, normalize_features=False, transform=None, if_dpr=True):
     path = osp.join(osp.dirname(osp.realpath(__file__)), 'data', name)
     if name in ['cora', 'citeseer', 'pubmed']:
         dataset = Planetoid(path, name)
+    elif name in ['ogbn-arxiv']:
+        dataset = PygNodePropPredDataset(name='ogbn-arxiv')
     else:
         raise NotImplementedError
 
@@ -33,11 +35,21 @@ def get_dataset(name, normalize_features=False, transform=None, if_dpr=True):
         dataset.transform = transform
 
     dpr_data = Pyg2Dpr(dataset)
+    if name in ['ogbn-arxiv']:
+        # the features are different from the features provided by GraphSAINT
+        # normalize features, following graphsaint
+        feat, idx_train = dpr_data.features, dpr_data.idx_train
+        feat_train = feat[idx_train]
+        scaler = StandardScaler()
+        scaler.fit(feat_train)
+        feat = scaler.transform(feat)
+        dpr_data.features = feat
+
     return dpr_data
 
 
 class Pyg2Dpr(Dataset):
-    def __init__(self, pyg_data, multi_splits=False, **kwargs):
+    def __init__(self, pyg_data, **kwargs):
         try:
             splits = pyg_data.get_idx_split()
         except:
@@ -56,70 +68,26 @@ class Pyg2Dpr(Dataset):
         self.features = pyg_data.x.numpy()
         self.labels = pyg_data.y.numpy()
 
-        # enable link prediction ....
-        # self.enable_link_prediction(pyg_data)
-
         if len(self.labels.shape) == 2 and self.labels.shape[1] == 1:
             self.labels = self.labels.reshape(-1) # ogb-arxiv needs to reshape
-        if not multi_splits:
-            if hasattr(pyg_data, 'train_mask'):
 
-                # for fixed split
-                self.idx_train = mask_to_index(pyg_data.train_mask, n)
-                self.idx_val = mask_to_index(pyg_data.val_mask, n)
-                self.idx_test = mask_to_index(pyg_data.test_mask, n)
-                self.name = 'Pyg2Dpr'
-                # self.idx_train, self.idx_val, self.idx_test = get_train_val_test(
-                #         nnodes=n, val_size=0.2, test_size=0.2, stratify=self.labels)
-            else:
-                try:
-                    # for ogb
-                    self.idx_train = splits['train']
-                    self.idx_val = splits['valid']
-                    self.idx_test = splits['test']
-                    self.name = 'Pyg2Dpr'
-                except:
-                    # for other datasets
-                    # self.idx_train, self.idx_val, self.idx_test = get_train_val_test_gcn(self.labels)
-                    self.idx_train, self.idx_val, self.idx_test = get_train_val_test(
-                            nnodes=n, val_size=0.1, test_size=0.8, stratify=self.labels)
-        else:
-            # For wiki
-            self.splits = self.load_splits(pyg_data)
-            self.idx_train = self.splits['train'][0] # by default, it is from the first split
-            self.idx_val = self.splits['val'][0]
-            self.idx_test = self.splits['test'][0]
+        if hasattr(pyg_data, 'train_mask'):
+            # for fixed split
+            self.idx_train = mask_to_index(pyg_data.train_mask, n)
+            self.idx_val = mask_to_index(pyg_data.val_mask, n)
+            self.idx_test = mask_to_index(pyg_data.test_mask, n)
             self.name = 'Pyg2Dpr'
-
-    def load_splits(self, data):
-        splits = {'train': [], 'val': [], 'test': []}
-        n = data.num_nodes
-        for i in range(0, data.train_mask.shape[1]):
-            train_mask = data.train_mask[:, i]
-            val_mask = data.val_mask[:, i]
-            if len(data.test_mask.shape) == 1:
-                test_mask = data.test_mask
-            else:
-                test_mask = data.test_mask[:, i]
-            idx_train = mask_to_index(train_mask, n)
-            idx_val = mask_to_index(val_mask, n)
-            idx_test = mask_to_index(test_mask, n)
-
-            splits['train'].append(idx_train)
-            splits['val'].append(idx_val)
-            splits['test'].append(idx_test)
-        return splits
-
-
-    def enable_link_prediction(self, pyg_data):
-        # pyg_data = train_test_split_edges(pyg_data)
-        pyg_data = train_test_split_edges(pyg_data, val_ratio=0.1, test_ratio=0.4)
-        self.train_pos_edge_index = pyg_data.train_pos_edge_index
-        # self.train_neg_edge_index = pyg_data.train_neg_edge_index
-        self.val_pos_edge_index = pyg_data.val_pos_edge_index
-        self.val_neg_edge_index = pyg_data.val_neg_edge_index
-        self.test_pos_edge_index = pyg_data.test_pos_edge_index
-        self.test_neg_edge_index = pyg_data.test_neg_edge_index
+        else:
+            try:
+                # for ogb
+                self.idx_train = splits['train']
+                self.idx_val = splits['valid']
+                self.idx_test = splits['test']
+                self.name = 'Pyg2Dpr'
+            except:
+                # for other datasets
+                self.idx_train, self.idx_val, self.idx_test = get_train_val_test(
+                        nnodes=n, val_size=0.1, test_size=0.8, stratify=self.labels)
 
 
 def mask_to_index(index, size):

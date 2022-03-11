@@ -10,8 +10,8 @@ from copy import deepcopy
 import numpy as np
 from tqdm import tqdm
 from models.gcn import GCN
-from models.sgc_2 import SGC
-from models.sgc import SGC as SGC1
+from models.sgc import SGC
+from models.sgc_multi import SGC as SGC1
 from models.parametrized_adj import PGE
 import scipy.sparse as sp
 from torch_sparse import SparseTensor
@@ -79,6 +79,10 @@ class GCond:
         adj_syn = pge.inference(feat_syn)
         args = self.args
 
+        if args.save:
+            torch.save(adj_syn, f'saved_ours/adj_{args.dataset}_{args.reduction_rate}_{args.seed}.pt')
+            torch.save(feat_syn, f'saved_ours/feat_{args.dataset}_{args.reduction_rate}_{args.seed}.pt')
+
         noval = True
         model.fit_with_val(feat_syn, adj_syn, labels_syn, data,
                      train_iters=600, normalize=True, verbose=False, noval=noval)
@@ -123,32 +127,25 @@ class GCond:
         data = self.data
         feat_syn, pge, labels_syn = self.feat_syn, self.pge, self.labels_syn
         features, adj, labels = data.feat_train, data.adj_train, data.labels_train
-        # from scipy.sparse.linalg import eigsh
-        # eig_real, eigenvectors = eigsh(adj.asfptype(), k=1)
-        # eig_real = eig_real[0]
-
         syn_class_indices = self.syn_class_indices
-
         features, adj, labels = utils.to_tensor(features, adj, labels, device=self.device)
-
         feat_sub, adj_sub = self.get_sub_adj_feat(features)
         self.feat_syn.data.copy_(feat_sub)
-
 
         if utils.is_sparse_tensor(adj):
             adj_norm = utils.normalize_adj_tensor(adj, sparse=True)
         else:
             adj_norm = utils.normalize_adj_tensor(adj)
 
-        adj=adj_norm
+        adj = adj_norm
         adj = SparseTensor(row=adj._indices()[0], col=adj._indices()[1],
                 value=adj._values(), sparse_sizes=adj.size()).t()
 
 
         outer_loop, inner_loop = get_loops(args)
-        loss_avg = 0
 
         for it in range(args.epochs+1):
+            loss_avg = 0
             if args.sgc==1:
                 model = SGC(nfeat=data.feat_train.shape[1], nhid=args.hidden,
                             nclass=data.nclass, dropout=args.dropout,
@@ -233,7 +230,6 @@ class GCond:
                 self.optimizer_pge.zero_grad()
                 loss.backward()
                 if it % 50 < 10:
-                # if it % 10 < 5: # used for flickr
                     self.optimizer_pge.step()
                 else:
                     self.optimizer_feat.step()
@@ -259,7 +255,8 @@ class GCond:
                     optimizer_model.step() # update gnn param
 
             loss_avg /= (data.nclass*outer_loop)
-            print('Epoch {}, loss_avg: {}'.format(it, loss_avg))
+            if it % 50 == 0:
+                print('Epoch {}, loss_avg: {}'.format(it, loss_avg))
 
             eval_epochs = [100, 200, 400, 600, 800, 1000, 1200, 1400, 1600, 1800, 2000]
 
@@ -316,8 +313,8 @@ def get_loops(args):
     if args.dataset in ['reddit']:
         return args.outer, args.inner
     if args.dataset in ['flickr']:
-        # return 20, args.inner
         return args.outer, args.inner
+        # return 10, 1
     if args.dataset in ['cora']:
         return 20, 10
     if args.dataset in ['citeseer']:

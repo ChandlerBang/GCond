@@ -148,70 +148,6 @@ class GCN(nn.Module):
             for bn in self.bns:
                 bn.reset_parameters()
 
-    def fit(self, features, adj, labels, idx_train, idx_val=None, train_iters=200, initialize=True, verbose=False, normalize=True, patience=None, **kwargs):
-
-        if initialize:
-            self.initialize()
-
-        # features, adj, labels = data.feat_train, data.adj_train, data.labels_train
-        if type(adj) is not torch.Tensor:
-            features, adj, labels = utils.to_tensor(features, adj, labels, device=self.device)
-        else:
-            features = features.to(self.device)
-            adj = adj.to(self.device)
-            labels = labels.to(self.device)
-
-        if normalize:
-            if utils.is_sparse_tensor(adj):
-                adj_norm = utils.normalize_adj_tensor(adj, sparse=True)
-            else:
-                adj_norm = utils.normalize_adj_tensor(adj)
-        else:
-            adj_norm = adj
-
-        if 'feat_norm' in kwargs and kwargs['feat_norm']:
-            from utils import row_normalize_tensor
-            features = row_normalize_tensor(features-features.min())
-
-        self.adj_norm = adj_norm
-        self.features = features
-
-        if len(labels.shape) > 1:
-            self.multi_label = True
-            self.loss = torch.nn.BCELoss()
-        else:
-            self.multi_label = False
-            self.loss = F.nll_loss
-
-        labels = labels.float() if self.multi_label else labels
-        self.labels = labels
-
-
-        if idx_val is not None:
-            self._train_with_val2(labels, idx_train, idx_val, train_iters, verbose)
-        else:
-            self._train_without_val2(labels, idx_train, train_iters, verbose)
-
-    def _train_without_val2(self, labels, idx_train, train_iters, verbose):
-        self.train()
-        optimizer = optim.Adam(self.parameters(), lr=self.lr, weight_decay=self.weight_decay)
-        for i in range(train_iters):
-            if i == train_iters // 2:
-                lr = self.lr*0.1
-                optimizer = optim.Adam(self.parameters(), lr=lr, weight_decay=self.weight_decay)
-
-            optimizer.zero_grad()
-            output = self.forward(self.features, self.adj_norm)
-            loss_train = self.loss(output[idx_train], labels[idx_train])
-            loss_train.backward()
-            optimizer.step()
-            if verbose and i % 10 == 0:
-                print('Epoch {}, training loss: {}'.format(i, loss_train.item()))
-
-        self.eval()
-        output = self.forward(self.features, self.adj_norm)
-        self.output = output
-
     def fit_with_val(self, features, adj, labels, data, train_iters=200, initialize=True, verbose=False, normalize=True, patience=None, noval=False, **kwargs):
         '''data: full data class'''
         if initialize:
@@ -250,7 +186,6 @@ class GCN(nn.Module):
         self.labels = labels
 
         if noval:
-            # self._train_without_val(labels, data, train_iters, verbose)
             self._train_with_val(labels, data, train_iters, verbose, adj_val=True)
         else:
             self._train_with_val(labels, data, train_iters, verbose)
@@ -304,28 +239,6 @@ class GCN(nn.Module):
         if verbose:
             print('=== picking the best model according to the performance on validation ===')
         self.load_state_dict(weights)
-
-    def _train_without_val(self, labels, data, train_iters, verbose):
-        if verbose:
-            print('=== training gcn model ===')
-        optimizer = optim.Adam(self.parameters(), lr=self.lr, weight_decay=self.weight_decay)
-
-        best_acc_val = 0
-
-        for i in range(train_iters):
-            if i == train_iters // 2:
-                lr = self.lr*0.1
-                optimizer = optim.Adam(self.parameters(), lr=lr, weight_decay=self.weight_decay)
-
-            self.train()
-            optimizer.zero_grad()
-            output = self.forward(self.features, self.adj_norm)
-            loss_train = self.loss(output, labels)
-            loss_train.backward()
-            optimizer.step()
-
-            if verbose and i % 100 == 0:
-                print('Epoch {}, training loss: {}'.format(i, loss_train.item()))
 
 
     def test(self, idx_test):
