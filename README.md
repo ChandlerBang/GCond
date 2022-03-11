@@ -49,6 +49,8 @@ python train_gcond_induct.py --dataset flickr --nlayers=2 --lr_feat=0.01 --gpu_i
 ```
 
 ## Reproduce the performance
+The generated graphs are saved in the folder `saved_ours`; you can directly load them to test the performance.
+
 For Table 2, run `bash scripts/run_main.sh`.
 
 For Table 3, run `bash scripts/run_cross.sh`.
