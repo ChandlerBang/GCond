@@ -1,5 +1,5 @@
 # GCond
-[ICLR 2022] A PyTorch implementation of paper ["Graph Condensation for Graph Neural Networks"](https://arxiv.org/abs/2110.07580)
+[ICLR 2022] A PyTorch implementation of paper ["Graph Condensation for Graph Neural Networks"](https://openreview.net/pdf?id=WLEx3Jo4QaB)
 
 
 
@@ -57,17 +57,17 @@ For Table 3, run `bash scripts/run_cross.sh`.
 
 
 ## Cite
-For more information, you can take a look at the [paper](https://arxiv.org/abs/2110.07580).
+For more information, you can take a look at the [paper](https://openreview.net/pdf?id=WLEx3Jo4QaB).
 
 If you find this repo to be useful, please cite our paper. Thank you.
 ```
-@misc{jin2021graph,
-      title={Graph Condensation for Graph Neural Networks}, 
-      author={Wei Jin and Lingxiao Zhao and Shichang Zhang and Yozen Liu and Jiliang Tang and Neil Shah},
-      year={2021},
-      eprint={2110.07580},
-      archivePrefix={arXiv},
-      primaryClass={cs.LG}
+@inproceedings{
+    jin2022graph,
+    title={Graph Condensation for Graph Neural Networks},
+    author={Wei Jin and Lingxiao Zhao and Shichang Zhang and Yozen Liu and Jiliang Tang and Neil Shah},
+    booktitle={International Conference on Learning Representations},
+    year={2022},
+    url={https://openreview.net/forum?id=WLEx3Jo4QaB}
 }
 ```
 
