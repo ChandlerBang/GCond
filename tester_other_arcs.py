@@ -168,7 +168,7 @@ class Evaluator:
             model_class = GCN
         else:
             model_class = eval(model_type)
-        weight_decay = 5e-4 if args.dataset in ['ogbn-arxiv'] else 5e-4
+        weight_decay = 5e-4
         dropout = 0.5 if args.dataset in ['reddit'] else 0
 
         model = model_class(nfeat=feat_syn.shape[1], nhid=args.hidden, dropout=dropout,
@@ -228,29 +228,19 @@ class Evaluator:
     def train(self, verbose=True):
         args = self.args
         data = self.data
-        feat_syn, adj_param, labels_syn = self.feat_syn, self.adj_param, self.labels_syn
-        # features, adj, labels = data.feat_train, data.adj_train, data.labels_train
-
-        features, adj, labels = data.feat_full, data.adj_full, data.labels_full
-        idx_train = data.idx_train
-
-
-        syn_class_indices = self.syn_class_indices
-        features, adj, labels = utils.to_tensor(features, adj, labels, device=self.device)
 
         final_res = {}
         runs = self.args.nruns
 
-        # # for model_type in ['GCN',  'GraphSage', 'SGC1', 'MLP', 'APPNP1', 'Cheby']:
-        # for model_type in ['Cheby']:
-        #     res = []
-        #     nlayer = 2
-        #     for i in range(runs):
-        #         res.append(self.test(nlayer, verbose=False, model_type=model_type))
-        #     res = np.array(res)
-        #     print('Test/Train Mean Accuracy:',
-        #             repr([res.mean(0), res.std(0)]))
-        #     final_res[model_type] = [res.mean(0), res.std(0)]
+        for model_type in ['GCN',  'GraphSage', 'SGC1', 'MLP', 'APPNP1', 'Cheby']:
+            res = []
+            nlayer = 2
+            for i in range(runs):
+                res.append(self.test(nlayer, verbose=False, model_type=model_type))
+            res = np.array(res)
+            print('Test/Train Mean Accuracy:',
+                    repr([res.mean(0), res.std(0)]))
+            final_res[model_type] = [res.mean(0), res.std(0)]
 
 
         print('=== testing GAT')
