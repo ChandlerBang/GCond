@@ -46,7 +46,7 @@ torch.cuda.manual_seed(args.seed)
 
 print(args)
 
-data_graphsaint = ['flickr', 'reddit']
+data_graphsaint = ['flickr', 'reddit', 'ogbn-arxiv']
 if args.dataset in data_graphsaint:
     # data = DataGraphSAINT(args.dataset)
     data = DataGraphSAINT(args.dataset, label_rate=args.label_rate)
