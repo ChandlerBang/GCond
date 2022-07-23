@@ -1,6 +1,7 @@
 # GCond
-[ICLR 2022] A PyTorch implementation of paper ["Graph Condensation for Graph Neural Networks"](https://openreview.net/pdf?id=WLEx3Jo4QaB)
+[ICLR 2022] The PyTorch implementation for ["Graph Condensation for Graph Neural Networks"](https://openreview.net/pdf?id=WLEx3Jo4QaB) is provided under the main directory. 
 
+[KDD 2022] The implementation for ["Condensing Graphs via One-Step Gradient Matching"](https://arxiv.org/abs/2206.07746) is shown in the `KDD22_DosCond` directory. See [link](https://github.com/ChandlerBang/GCond/tree/main/KDD22_DosCond).
 
 
 Abstract
@@ -11,10 +12,6 @@ We propose and study the problem of graph condensation for graph neural networks
 ![]()
 
 <div align=center><img src="https://github.com/ChandlerBang/GCond/blob/main/GCond.png" width="800"/></div>
-
-
-## Some Notes
-The current code provides the essential implemention of GCond. Currently it contains some repetitive code blocks and comments. A more detailed and clean version will be updated soon. 
 
 
 ## Requirements
