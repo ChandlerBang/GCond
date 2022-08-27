@@ -1,6 +1,6 @@
 # DosCond
 
-[KDD 2022] A PyTorch Implementation for ["Condensing Graphs via One-Step Gradient Matching"](https://arxiv.org/abs/2206.07746) under node classification setting. For graph classification setting, please refer to [https://github.com/amzn/DosCond](https://github.com/amzn/DosCond). 
+[KDD 2022] A PyTorch Implementation for ["Condensing Graphs via One-Step Gradient Matching"](https://arxiv.org/abs/2206.07746) under node classification setting. For graph classification setting, please refer to [https://github.com/amazon-research/DosCond](https://github.com/amazon-research/DosCond). 
 
 
 Abstract
