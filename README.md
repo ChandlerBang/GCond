@@ -52,6 +52,13 @@ For Table 2, run `bash scripts/run_main.sh`.
 
 For Table 3, run `bash scripts/run_cross.sh`.
 
+## [Faster Condensation!] One-Step Gradient Matching
+From the KDD'22 paper ["Condensing Graphs via One-Step Gradient Matching"](https://arxiv.org/abs/2206.07746), we know that performing gradient matching for only one step can also achieve a good performance while significantly accelerating the condensation process. Hence, we can run the following command to perform one-step gradient matching, which is essentially much faster than the original version:
+```
+python train_gcond_transduct.py --dataset citeseer --nlayers=2 --lr_feat=1e-2 --lr_adj=1e-2 --r=0.5  --sgc=0 --dis=mse --gpu_id=2 --one_step=1  --epochs=3000
+```
+For more commands, please go to [`KDD22_DosCond`](https://github.com/ChandlerBang/GCond/tree/main/KDD22_DosCond).
+
 
 ## Cite
 For more information, you can take a look at the [paper](https://openreview.net/pdf?id=WLEx3Jo4QaB).
@@ -67,9 +74,4 @@ If you find this repo to be useful, please cite our paper. Thank you.
     url={https://openreview.net/forum?id=WLEx3Jo4QaB}
 }
 ```
-
-
-
-
-
 

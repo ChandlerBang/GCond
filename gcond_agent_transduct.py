@@ -258,7 +258,7 @@ class GCond:
             if it % 50 == 0:
                 print('Epoch {}, loss_avg: {}'.format(it, loss_avg))
 
-            eval_epochs = [400, 600, 800, 1000, 1200, 1600, 2000]
+            eval_epochs = [400, 600, 800, 1000, 1200, 1600, 2000, 3000, 4000, 5000]
 
             if verbose and it in eval_epochs:
             # if verbose and (it+1) % 50 == 0:
@@ -309,6 +309,10 @@ class GCond:
 def get_loops(args):
     # Get the two hyper-parameters of outer-loop and inner-loop.
     # The following values are empirically good.
+    if args.one_step:
+        if args.dataset =='ogbn-arxiv':
+            return 5, 0
+        return 1, 0
     if args.dataset in ['ogbn-arxiv']:
         return args.outer, args.inner
     if args.dataset in ['cora']:

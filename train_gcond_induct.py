@@ -34,6 +34,7 @@ parser.add_argument('--outer', type=int, default=20)
 parser.add_argument('--option', type=int, default=0)
 parser.add_argument('--save', type=int, default=0)
 parser.add_argument('--label_rate', type=float, default=1)
+parser.add_argument('--one_step', type=int, default=0)
 args = parser.parse_args()
 
 torch.cuda.set_device(args.gpu_id)
