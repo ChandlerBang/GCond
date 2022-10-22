@@ -22,3 +22,17 @@ python train_gcond_induct.py --dataset flickr --nlayers=2 --lr_feat=5e-3 --lr_ad
 Note that using smaller learning rate and larger epochs can get even higher performance.
 
 
+## Cite
+For more information, you can take a look at the [paper](https://arxiv.org/abs/2206.07746).
+
+If you find this repo to be useful, please cite our paper. Thank you.
+```
+@inproceedings{jin2022condensing,
+  title={Condensing Graphs via One-Step Gradient Matching},
+  author={Jin, Wei and Tang, Xianfeng and Jiang, Haoming and Li, Zheng and Zhang, Danqing and Tang, Jiliang and Yin, Bing},
+  booktitle={Proceedings of the 28th ACM SIGKDD Conference on Knowledge Discovery and Data Mining},
+  pages={720--730},
+  year={2022}
+}
+```
+
