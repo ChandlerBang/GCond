@@ -61,9 +61,7 @@ For more commands, please go to [`KDD22_DosCond`](https://github.com/ChandlerBan
 
 
 ## Cite
-For more information, you can take a look at the [paper](https://openreview.net/pdf?id=WLEx3Jo4QaB).
-
-If you find this repo to be useful, please cite our paper. Thank you.
+If you find this repo to be useful, please cite our two papers. Thank you!
 ```
 @inproceedings{
     jin2022graph,
@@ -72,6 +70,16 @@ If you find this repo to be useful, please cite our paper. Thank you.
     booktitle={International Conference on Learning Representations},
     year={2022},
     url={https://openreview.net/forum?id=WLEx3Jo4QaB}
+}
+```
+
+```
+@inproceedings{jin2022condensing,
+  title={Condensing Graphs via One-Step Gradient Matching},
+  author={Jin, Wei and Tang, Xianfeng and Jiang, Haoming and Li, Zheng and Zhang, Danqing and Tang, Jiliang and Yin, Bing},
+  booktitle={Proceedings of the 28th ACM SIGKDD Conference on Knowledge Discovery and Data Mining},
+  pages={720--730},
+  year={2022}
 }
 ```
 
