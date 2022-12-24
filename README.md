@@ -33,6 +33,9 @@ For cora, citeseer and pubmed, the code will directly download them; so no extra
 For reddit, flickr and arxiv, we use the datasets provided by [GraphSAINT](https://github.com/GraphSAINT/GraphSAINT). 
 They are available on [Google Drive link](https://drive.google.com/open?id=1zycmmDES39zVlbVCYs88JTJ1Wm5FbfLz) (alternatively, [BaiduYun link (code: f1ao)](https://pan.baidu.com/s/1SOb0SiSAXavwAcNqkttwcg)). Rename the folder to `data` at the root directory. Note that the links are provided by GraphSAINT team. 
 
+
+
+
 ## Run the code
 For transductive setting, please run the following command:
 ```
@@ -55,10 +58,12 @@ For Table 3, run `bash scripts/run_cross.sh`.
 ## [Faster Condensation!] One-Step Gradient Matching
 From the KDD'22 paper ["Condensing Graphs via One-Step Gradient Matching"](https://arxiv.org/abs/2206.07746), we know that performing gradient matching for only one step can also achieve a good performance while significantly accelerating the condensation process. Hence, we can run the following command to perform one-step gradient matching, which is essentially much faster than the original version:
 ```
-python train_gcond_transduct.py --dataset citeseer --nlayers=2 --lr_feat=1e-2 --lr_adj=1e-2 --r=0.5  --sgc=0 --dis=mse --gpu_id=2 --one_step=1  --epochs=3000
+python train_gcond_transduct.py --dataset citeseer --nlayers=2 --lr_feat=1e-2 --lr_adj=1e-2 --r=0.5 \
+    --sgc=0 --dis=mse --gpu_id=2 --one_step=1  --epochs=3000
 ```
 For more commands, please go to [`KDD22_DosCond`](https://github.com/ChandlerBang/GCond/tree/main/KDD22_DosCond).
 
+**[Note]: I found that sometimes using MSE loss for gradient matching can be more stable than using `ours` loss**, and it gives more flexibility on the model used in condensation (using GCN as the backbone can also generate good condensed graphs). 
 
 ## Cite
 If you find this repo to be useful, please cite our two papers. Thank you!
