@@ -65,6 +65,27 @@ For more commands, please go to [`KDD22_DosCond`](https://github.com/ChandlerBan
 
 **[Note]: I found that sometimes using MSE loss for gradient matching can be more stable than using `ours` loss**, and it gives more flexibility on the model used in condensation (using GCN as the backbone can also generate good condensed graphs). 
 
+
+## Whole Dataset Performance 
+When we do coreset selection, we need to first the model on the whole dataset. Thus we can obtain the performanceo of whole dataset by running `train_coreset.py` and `train_coreset_induct.py`:
+```
+python train_coreset.py --dataset cora --r=0.01  --method=random
+python train_coreset_induct.py --dataset flickr --r=0.01  --method=random
+```
+
+## Coreset Performance
+Run the following code to get the coreset performance for transductive setting.
+```
+python train_coreset.py --dataset cora --r=0.01  --method=herding
+python train_coreset.py --dataset cora --r=0.01  --method=random
+python train_coreset.py --dataset cora --r=0.01  --method=kcenter
+```
+Similarly, run the following code for the inductive setting.
+```
+python train_coreset_induct.py --dataset flickr --r=0.01  --method=kcenter
+```
+
+
 ## Cite
 If you find this repo to be useful, please cite our two papers. Thank you!
 ```
