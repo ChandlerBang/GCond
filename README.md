@@ -43,11 +43,12 @@ python train_gcond_transduct.py --dataset cora --nlayers=2 --lr_feat=1e-4 --gpu_
 ```
 where `r` indicates the ratio of condensed samples to the labeled samples. For instance, there are only 140 labeled nodes in Cora dataset, so `r=0.5` indicates the number of condensed samples are 70, **which corresponds to  r=2.6%=70/2710 in our paper**. Thus, the parameter `r` is different from the real reduction rate in the paper for the transductive setting, please see the following table for the correspondence.
 
-|              | `r` in the code     | `r` in the paper  (real reducation rate)    |
+|              | `r` in the code     | `r` in the paper  (real reduction rate)    |
 |--------------|-------------------|---------------------|
 | Transductive | Cora, r=0.5       | Cora, r=2.6%        |
 | Transductive | Citeseer, r=0.5   | Citeseer, r=1.8%    |
 | Transductive | Ogbn-arxiv, r=0.5 | Ogbn-arxiv, r=0.25% |
+| Transductive | Pubmed, r=0.5     | Pubmed, r=0.3%      |
 | Inductive    | Flickr, r=0.01    | Flickr, r=1%        |
 | Inductive    | Reddit, r=0.001   | Reddit, r=0.1%      |
 
