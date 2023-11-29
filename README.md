@@ -47,7 +47,7 @@ where `r` indicates the ratio of condensed samples to the labeled samples. For i
 |--------------|-------------------|---------------------|
 | Transductive | Cora, r=0.5       | Cora, r=2.6%        |
 | Transductive | Citeseer, r=0.5   | Citeseer, r=1.8%    |
-| Transductive | Ogbn-arxiv, r=0.5 | Ogbn-arxiv, r=0.25% |
+| Transductive | Ogbn-arxiv, r= 0.005 | Ogbn-arxiv, r=0.25% |
 | Transductive | Pubmed, r=0.5     | Pubmed, r=0.3%      |
 | Inductive    | Flickr, r=0.01    | Flickr, r=1%        |
 | Inductive    | Reddit, r=0.001   | Reddit, r=0.1%      |
