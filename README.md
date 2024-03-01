@@ -14,6 +14,13 @@ We propose and study the problem of graph condensation for graph neural networks
 <div align=center><img src="https://github.com/ChandlerBang/GCond/blob/main/GCond.png" width="800"/></div>
 
 
+## A Nice Survey Paper
+Please check out our survey paper blew, which summarizes the recent advances in graph condensation.
+
+![image](https://github.com/CurryTang/Towards-Graph-Foundation-Models-New-perspective-/assets/15672123/89a23a37-71d4-47f7-8949-7d859a41e369)![image](https://github.com/CurryTang/Towards-Graph-Foundation-Models-New-perspective-/assets/15672123/89a23a37-71d4-47f7-8949-7d859a41e369)![image](https://github.com/CurryTang/Towards-Graph-Foundation-Models-New-perspective-/assets/15672123/89a23a37-71d4-47f7-8949-7d859a41e369)[[A Comprehensive Survey on Graph Reduction: Sparsification, Coarsening, and Condensation]](https://arxiv.org/abs/2402.03358)
+
+
+
 ## Requirements
 Please see [requirements.txt](https://github.com/ChandlerBang/GCond/blob/main/requirements.txt).
 ```
