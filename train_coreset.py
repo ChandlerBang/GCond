@@ -103,7 +103,7 @@ for _ in tqdm(range(runs)):
     # Full graph
     output = model.predict(data.feat_full, data.adj_full)
     loss_test = F.nll_loss(output[data.idx_test], labels_test)
-    acc_test = utils.accuracy(output[data.idx_test], labels_test)
+    acc_test = accuracy(output[data.idx_test], labels_test)
     res.append(acc_test.item())
 
 res = np.array(res)
