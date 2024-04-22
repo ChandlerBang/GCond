@@ -3,6 +3,8 @@
 
 [KDD 2022] The implementation for ["Condensing Graphs via One-Step Gradient Matching"](https://arxiv.org/abs/2206.07746) is shown in the `KDD22_DosCond` directory. See [link](https://github.com/ChandlerBang/GCond/tree/main/KDD22_DosCond).
 
+[IJCAI 2024] Please read our recent survey ["A Comprehensive Survey on Graph Reduction: Sparsification, Coarsening, and Condensation"](https://arxiv.org/abs/2402.03358) for a detailed review of graph reduction techniques!
+
 
 Abstract
 ----
