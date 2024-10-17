@@ -106,7 +106,7 @@ python train_coreset_induct.py --dataset flickr --r=0.01  --method=kcenter
 
 
 ## Cite
-If you find this repo to be useful, please cite our two papers. Thank you!
+If you find this repo to be useful, please cite our three papers. Thank you!
 ```
 @inproceedings{
     jin2022graph,
@@ -125,6 +125,15 @@ If you find this repo to be useful, please cite our two papers. Thank you!
   booktitle={Proceedings of the 28th ACM SIGKDD Conference on Knowledge Discovery and Data Mining},
   pages={720--730},
   year={2022}
+}
+```
+
+```
+@article{hashemi2024comprehensive,
+  title={A Comprehensive Survey on Graph Reduction: Sparsification, Coarsening, and Condensation},
+  author={Hashemi, Mohammad and Gong, Shengbo and Ni, Juntong and Fan, Wenqi and Prakash, B Aditya and Jin, Wei},
+  journal={International Joint Conference on Artificial Intelligence (IJCAI)},
+  year={2024}
 }
 ```
 
