@@ -5,11 +5,11 @@
 
 [IJCAI 2024] Please read our recent survey ["A Comprehensive Survey on Graph Reduction: Sparsification, Coarsening, and Condensation"](https://arxiv.org/abs/2402.03358) for a detailed review of graph reduction techniques!
 
-[ArXiv 2024] We released a benchmarking framework for graph condensation ["GC-Bench: A Benchmark Framework for Graph Condensation with New Insights"](https://arxiv.org/abs/2406.16715), including **robustness**, **privacy preservation**, NAS performance, property analysis, etc!
+[ArXiv 2024] We released a benchmarking framework for graph condensation ["GC4NC: A Benchmark Framework for Graph Condensation with New Insights"](https://arxiv.org/abs/2406.16715), including **robustness**, **privacy preservation**, NAS performance, property analysis, etc!
 
 Abstract
 ----
-We propose and study the problem of graph condensation for graph neural networks (GNNs). Specifically, we aim to condense the large, original graph into a small, synthetic and highly-informative graph, such that GNNs trained on the small graph and large graph have comparable performance. Extensive experiments have demonstrated the effectiveness of the proposed framework in condensing different graph datasets into informative smaller graphs. In particular, we are able to approximate the original test accuracy by 95.3% on Reddit, 99.8% on Flickr and 99.0% on Citeseer, while reducing their graph size by more than 99.9%, and the condensed graphs can be used to train various GNN architectures.
+We propose and study the problem of graph condensation for graph neural networks (GNNs). Specifically, we aim to condense the large, original graph into a small, synthetic, and highly-informative graph, such that GNNs trained on the small graph and large graph have comparable performance. Extensive experiments have demonstrated the effectiveness of the proposed framework in condensing different graph datasets into informative smaller graphs. In particular, we are able to approximate the original test accuracy by 95.3% on Reddit, 99.8% on Flickr and 99.0% on Citeseer, while reducing their graph size by more than 99.9%, and the condensed graphs can be used to train various GNN architectures.
 
 
 ![]()
