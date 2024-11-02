@@ -5,7 +5,7 @@
 
 [IJCAI 2024] Please read our recent survey ["A Comprehensive Survey on Graph Reduction: Sparsification, Coarsening, and Condensation"](https://arxiv.org/abs/2402.03358) for a detailed review of graph reduction techniques!
 
-[ArXiv 2024] We released a benchmarking framework for graph condensation ["GC-Bench: A Benchmark Framework for Graph Condensation with New Insights"](https://arxiv.org/abs/2406.16715), including robustness, NAS performance, property analysis, etc!
+[ArXiv 2024] We released a benchmarking framework for graph condensation ["GC-Bench: A Benchmark Framework for Graph Condensation with New Insights"](https://arxiv.org/abs/2406.16715), including **robustness**, **privacy preservation**, NAS performance, property analysis, etc!
 
 Abstract
 ----
